@@ -7,6 +7,15 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 gsap.registerPlugin(ScrollTrigger);
 
 const TOTAL_FRAMES = 112;
+// Number of frames to load immediately on startup (shows content fast, no black screen)
+const INITIAL_FRAMES = 1;
+// How many frames to keep loaded ahead/behind current position
+const BUFFER_AHEAD = 15;
+const BUFFER_BEHIND = 5;
+
+function frameUrl(i) {
+  return `/frames/ezgif-frame-${String(i + 1).padStart(3, '0')}.png`;
+}
 
 export default function HeroSection() {
   const canvasRef = useRef(null);
@@ -17,12 +26,15 @@ export default function HeroSection() {
   const ctaRef = useRef(null);
   const statsRef = useRef(null);
   const badgeRef = useRef(null);
+  // Hidden <img> for frame 0 — browser loads it during HTML parsing, before JS runs
+  const frame0ImgRef = useRef(null);
 
   // Frame state for smooth lerp
   const frameState = useRef({ current: 0, target: 0 });
-  const imagesRef = useRef([]);
+  const imagesRef = useRef(new Array(TOTAL_FRAMES).fill(null));
   const rafRef = useRef(null);
   const loadedRef = useRef(new Set());
+  const loadingRef = useRef(new Set()); // tracks in-flight loads
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -37,15 +49,77 @@ export default function HeroSection() {
     setSize();
     window.addEventListener('resize', setSize, { passive: true });
 
-    // Preload all frames
-    const images = Array.from({ length: TOTAL_FRAMES }, (_, i) => {
+    const images = imagesRef.current;
+    const loaded = loadedRef.current;
+    const loading = loadingRef.current;
+
+    // Grab the hidden <img> that the browser has ALREADY started loading
+    // as part of HTML parsing — reuse it for frame 0 instead of creating new Image().
+    const domFrame0 = frame0ImgRef.current;
+    if (domFrame0) {
+      images[0] = domFrame0;
+      loading.add(0);
+      const onLoad0 = () => {
+        loaded.add(0);
+        loading.delete(0);
+        drawFrame(0);
+      };
+      if (domFrame0.complete && domFrame0.naturalWidth) {
+        // Already loaded from memory/disk cache — draw immediately
+        loaded.add(0);
+        loading.delete(0);
+      } else {
+        domFrame0.addEventListener('load', onLoad0, { once: true });
+      }
+    }
+
+    // --- Lazy loader: load a single frame by index if not already loaded/loading ---
+    function loadFrame(i) {
+      if (i < 0 || i >= TOTAL_FRAMES) return;
+      if (loaded.has(i) || loading.has(i)) return;
+      loading.add(i);
       const img = new Image();
-      img.src = `/frames/ezgif-frame-${String(i + 1).padStart(3, '0')}.png`;
-      img.onload = () => loadedRef.current.add(i);
-      if (img.complete) loadedRef.current.add(i);
-      return img;
-    });
-    imagesRef.current = images;
+      img.onload = () => {
+        loaded.add(i);
+        loading.delete(i);
+      };
+      img.onerror = () => loading.delete(i);
+      img.src = frameUrl(i);
+      images[i] = img;
+    }
+
+    // --- Demand loader: load a window of frames around a given index ---
+    function loadFramesAround(centerIndex) {
+      const start = Math.max(0, Math.floor(centerIndex) - BUFFER_BEHIND);
+      const end = Math.min(TOTAL_FRAMES - 1, Math.floor(centerIndex) + BUFFER_AHEAD);
+      for (let i = start; i <= end; i++) {
+        loadFrame(i);
+      }
+    }
+
+    // PHASE 1 — frame 0 is already being handled by the DOM <img>,
+    //            load frames 1–4 immediately.
+    for (let i = 1; i < INITIAL_FRAMES; i++) {
+      loadFrame(i);
+    }
+
+    // Also kick off background loading of remaining frames after a short delay
+    // so they're ready before the user scrolls deep
+    let bgLoadTimer = setTimeout(() => {
+      // Load in batches of 10 so we don't hammer the network
+      let batchIdx = INITIAL_FRAMES;
+      function loadNextBatch() {
+        const end = Math.min(batchIdx + 10, TOTAL_FRAMES);
+        for (let i = batchIdx; i < end; i++) {
+          loadFrame(i);
+        }
+        batchIdx = end;
+        if (batchIdx < TOTAL_FRAMES) {
+          bgLoadTimer = setTimeout(loadNextBatch, 300);
+        }
+      }
+      loadNextBatch();
+    }, 1500); // wait 1.5s after page load before background-loading
 
     // Draw function — renders a specific (possibly fractional) frame
     function drawFrame(frameIndex) {
@@ -80,7 +154,7 @@ export default function HeroSection() {
       ctx.drawImage(imgA, dx, dy, dw, dh);
 
       // Blend with frame B for smoothness
-      if (blend > 0 && imgB && imgB.naturalWidth && loadedRef.current.has(upper)) {
+      if (blend > 0 && imgB && imgB.naturalWidth && loaded.has(upper)) {
         const aspectB = imgB.naturalWidth / imgB.naturalHeight;
         let dw2, dh2, dx2, dy2;
         if (aspectB > canvasAspect) {
@@ -96,26 +170,27 @@ export default function HeroSection() {
       }
     }
 
-    // Draw first frame asap
+    // Frame 0: draw immediately if already cached (e.g. browser disk cache hit),
+    // otherwise the onload handler inside loadFrame() will call drawFrame(0).
     const firstImg = images[0];
-    if (firstImg.complete) {
+    if (firstImg && firstImg.complete && firstImg.naturalWidth) {
       drawFrame(0);
-    } else {
-      firstImg.onload = () => drawFrame(0);
     }
 
     // RAF loop for smooth lerp animation
     const LERP_SPEED = 0.12;
     function animate() {
       const state = frameState.current;
-      // Lerp toward target
       const diff = state.target - state.current;
       if (Math.abs(diff) > 0.001) {
         state.current += diff * LERP_SPEED;
         const clampedFrame = Math.max(0, Math.min(TOTAL_FRAMES - 1, state.current));
-        if (loadedRef.current.has(Math.floor(clampedFrame))) {
+        const floorFrame = Math.floor(clampedFrame);
+        if (loaded.has(floorFrame)) {
           drawFrame(clampedFrame);
         }
+        // Ensure frames around the current position are loading
+        loadFramesAround(clampedFrame);
       }
       rafRef.current = requestAnimationFrame(animate);
     }
@@ -127,9 +202,12 @@ export default function HeroSection() {
         trigger: containerRef.current,
         start: 'top top',
         end: 'bottom bottom',
-        scrub: false, // we handle our own lerp
+        scrub: false,
         onUpdate: (self) => {
-          frameState.current.target = self.progress * (TOTAL_FRAMES - 1);
+          const targetFrame = self.progress * (TOTAL_FRAMES - 1);
+          frameState.current.target = targetFrame;
+          // Eagerly start loading frames ahead of scroll
+          loadFramesAround(targetFrame);
         },
       });
 
@@ -167,6 +245,7 @@ export default function HeroSection() {
 
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      clearTimeout(bgLoadTimer);
       scrollCtx.revert();
       window.removeEventListener('resize', setSize);
     };
@@ -194,7 +273,29 @@ export default function HeroSection() {
           overflow: 'hidden',
         }}
       >
-        {/* Canvas — frame animation */}
+        {/*
+          VISIBLE img for frame 0 — rendered in HTML so the browser shows it
+          IMMEDIATELY during page load, before any JS runs. This eliminates
+          the black screen entirely. The canvas layers on top once it draws.
+        */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          ref={frame0ImgRef}
+          src="/frames/ezgif-frame-001.png"
+          alt=""
+          fetchPriority="high"
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            zIndex: 0,
+          }}
+        />
+
+        {/* Canvas — frame animation, sits on top of the img fallback */}
         <canvas
           ref={canvasRef}
           style={{
@@ -203,6 +304,7 @@ export default function HeroSection() {
             width: '100%',
             height: '100%',
             display: 'block',
+            zIndex: 0,
           }}
         />
 
