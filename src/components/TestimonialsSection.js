@@ -287,7 +287,8 @@ export default function TestimonialsSection() {
       style={{
         position: 'relative',
         padding: '120px 0',
-        background: 'linear-gradient(180deg, #020407 0%, #030c06 50%, #020407 100%)',
+        background: 'var(--testimonial-bg)',
+        transition: 'background 0.5s ease',
         overflow: 'hidden',
       }}
     >
@@ -370,13 +371,13 @@ export default function TestimonialsSection() {
         {/* Left fade mask */}
         <div style={{
           position: 'absolute', left: 0, top: 0, bottom: 0, width: '120px',
-          background: 'linear-gradient(90deg, #020407 0%, transparent 100%)',
+          background: 'linear-gradient(90deg, var(--testimonial-fade) 0%, transparent 100%)',
           zIndex: 10, pointerEvents: 'none',
         }} />
         {/* Right fade mask */}
         <div style={{
           position: 'absolute', right: 0, top: 0, bottom: 0, width: '120px',
-          background: 'linear-gradient(-90deg, #020407 0%, transparent 100%)',
+          background: 'linear-gradient(-90deg, var(--testimonial-fade) 0%, transparent 100%)',
           zIndex: 10, pointerEvents: 'none',
         }} />
 

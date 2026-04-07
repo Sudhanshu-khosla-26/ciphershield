@@ -15,7 +15,8 @@ export default function Footer() {
       id="contact"
       style={{
         position: 'relative',
-        background: '#020407',
+        background: 'var(--footer-bg)',
+        transition: 'background 0.5s ease',
         borderTop: '1px solid rgba(0,255,127,0.08)',
         overflow: 'hidden',
       }}
@@ -34,7 +35,7 @@ export default function Footer() {
 
       {/* CTA Banner */}
       <div style={{
-        background: 'linear-gradient(135deg, rgba(0,255,127,0.06) 0%, rgba(0,30,15,0.3) 100%)',
+        background: 'linear-gradient(135deg, rgba(0,255,127,0.06) 0%, rgba(0,30,15,0.15) 100%)',
         borderBottom: '1px solid rgba(0,255,127,0.08)',
         padding: '60px 32px',
         textAlign: 'center',

@@ -3,6 +3,7 @@
 :root {
   --bg-primary: #020407;
   --bg-secondary: #050d0a;
+  --bg-card: linear-gradient(135deg, rgba(0, 255, 127, 0.06) 0%, rgba(0, 0, 0, 0.3) 100%);
   --accent-green: #00ff7f;
   --accent-green-dim: #00c45a;
   --accent-red: #ff2d55;
@@ -13,6 +14,38 @@
   --text-primary: #f0fff4;
   --text-secondary: rgba(240, 255, 244, 0.6);
   --text-muted: rgba(240, 255, 244, 0.35);
+  --card-border: rgba(0, 255, 127, 0.15);
+  --card-hover-border: rgba(255, 45, 85, 0.5);
+  --card-hover-bg: rgba(255, 45, 85, 0.04);
+  --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --card-hover-shadow: 0 20px 60px rgba(255, 45, 85, 0.12), 0 0 0 1px rgba(255, 45, 85, 0.15);
+  --footer-bg: #020407;
+  --testimonial-bg: linear-gradient(180deg, #020407 0%, #030c06 50%, #020407 100%);
+  --testimonial-fade: #020407;
+}
+
+[data-theme="light"] {
+  --bg-primary: #f5f7fa;
+  --bg-secondary: #e8ecf1;
+  --bg-card: linear-gradient(135deg, rgba(0, 90, 50, 0.06) 0%, rgba(255, 255, 255, 0.85) 100%);
+  --accent-green: #009e50;
+  --accent-green-dim: #007a3d;
+  --accent-red: #d9234a;
+  --accent-red-dim: #a51b38;
+  --glass-bg: rgba(0, 120, 60, 0.06);
+  --glass-border: rgba(0, 120, 60, 0.15);
+  --glass-bg-dark: rgba(255, 255, 255, 0.7);
+  --text-primary: #0a1628;
+  --text-secondary: rgba(10, 22, 40, 0.65);
+  --text-muted: rgba(10, 22, 40, 0.4);
+  --card-border: rgba(0, 120, 60, 0.2);
+  --card-hover-border: rgba(217, 35, 74, 0.45);
+  --card-hover-bg: rgba(217, 35, 74, 0.04);
+  --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  --card-hover-shadow: 0 20px 60px rgba(217, 35, 74, 0.1), 0 0 0 1px rgba(217, 35, 74, 0.12);
+  --footer-bg: #f5f7fa;
+  --testimonial-bg: linear-gradient(180deg, #f5f7fa 0%, #edf0f5 50%, #f5f7fa 100%);
+  --testimonial-fade: #f5f7fa;
 }
 
 * {
@@ -33,6 +66,7 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background 0.5s ease, color 0.5s ease;
 }
 
 /* Scrollbar */
@@ -40,7 +74,7 @@ body {
   width: 4px;
 }
 ::-webkit-scrollbar-track {
-  background: #020407;
+  background: var(--bg-primary);
 }
 ::-webkit-scrollbar-thumb {
   background: var(--accent-green-dim);
@@ -62,19 +96,24 @@ body {
   -webkit-backdrop-filter: blur(24px);
 }
 
+[data-theme="light"] .glass-dark {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(0, 120, 60, 0.1);
+}
+
 .glass-card {
-  background: linear-gradient(135deg, rgba(0, 255, 127, 0.06) 0%, rgba(0, 0, 0, 0.3) 100%);
-  border: 1px solid rgba(0, 255, 127, 0.15);
+  background: var(--bg-card);
+  border: 1px solid var(--card-border);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .glass-card:hover {
-  border-color: rgba(0, 255, 127, 0.35);
-  background: linear-gradient(135deg, rgba(0, 255, 127, 0.1) 0%, rgba(0, 20, 10, 0.4) 100%);
+  border-color: var(--card-hover-border);
+  background: var(--card-hover-bg);
   transform: translateY(-4px);
-  box-shadow: 0 20px 60px rgba(0, 255, 127, 0.08), 0 0 0 1px rgba(0, 255, 127, 0.1);
+  box-shadow: var(--card-hover-shadow);
 }
 
 /* Liquid glass effect */
@@ -85,6 +124,11 @@ body {
   backdrop-filter: blur(30px) saturate(200%);
   -webkit-backdrop-filter: blur(30px) saturate(200%);
   overflow: hidden;
+}
+
+[data-theme="light"] .liquid-glass {
+  background: linear-gradient(135deg, rgba(0, 120, 60, 0.05) 0%, rgba(255, 255, 255, 0.6) 50%, rgba(245, 247, 250, 0.8) 100%);
+  border: 1px solid rgba(0, 120, 60, 0.15);
 }
 
 .liquid-glass::before {
@@ -175,6 +219,28 @@ body {
 .animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
 .animate-rotate-slow { animation: rotate-slow 20s linear infinite; }
 
+/* ── Red Web Animation for Service Cards ── */
+@keyframes web-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+@keyframes web-node-pulse {
+  0%, 100% { r: 2; opacity: 0.6; }
+  50% { r: 3.5; opacity: 1; }
+}
+
+@keyframes web-grow {
+  0% { transform: scale(0.7); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* ── Theme Toggle ── */
+@keyframes toggle-spin {
+  0% { transform: rotate(0deg) scale(0.8); opacity: 0; }
+  100% { transform: rotate(360deg) scale(1); opacity: 1; }
+}
+
 /* Button styles */
 .btn-primary {
   display: inline-flex;
@@ -236,4 +302,83 @@ body {
   border-color: var(--accent-green);
   box-shadow: 0 0 20px rgba(0, 255, 127, 0.15);
   transform: translateY(-2px);
+}
+
+/* ── Service Card Styles ── */
+.service-card {
+  position: relative;
+  border-radius: 16px;
+  padding: 36px;
+  background: var(--bg-card);
+  border: 1px solid var(--card-border);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  overflow: hidden;
+  cursor: default;
+  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+  box-shadow: var(--card-shadow);
+}
+
+.service-card .red-web-bg {
+  position: absolute;
+  inset: 0;
+  opacity: 0 !important;
+  visibility: hidden;
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.service-card .red-web-bg svg {
+  width: 100%;
+  height: 100%;
+}
+
+.service-card:hover {
+  border-color: var(--card-hover-border);
+  transform: translateY(-8px) scale(1.01);
+  box-shadow: var(--card-hover-shadow);
+}
+
+.service-card:hover .red-web-bg {
+  opacity: 1 !important;
+  visibility: visible;
+}
+
+.service-card .card-content {
+  position: relative;
+  z-index: 1;
+}
+
+/* Service card icon container */
+.service-icon-wrap {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 255, 127, 0.07);
+  border: 1px solid rgba(0, 255, 127, 0.15);
+  margin-bottom: 24px;
+  transition: all 0.4s ease;
+}
+
+.service-card:hover .service-icon-wrap {
+  background: rgba(255, 45, 85, 0.1);
+  border-color: rgba(255, 45, 85, 0.3);
+  box-shadow: 0 0 20px rgba(255, 45, 85, 0.15);
+}
+
+/* Light theme overrides for service cards */
+[data-theme="light"] .service-card {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+}
+[data-theme="light"] .service-icon-wrap {
+  background: rgba(0, 120, 60, 0.08);
+  border-color: rgba(0, 120, 60, 0.2);
+}
+[data-theme="light"] .service-card:hover .service-icon-wrap {
+  background: rgba(217, 35, 74, 0.08);
+  border-color: rgba(217, 35, 74, 0.25);
 }

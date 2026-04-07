@@ -257,9 +257,10 @@ export default function HeroSection() {
       id="hero"
       style={{
         position: 'relative',
-        /* 600vh gives ~3840px at 768px viewport = ~87px/frame = smooth full playback */
-        height: '600vh',
-        background: '#020407',
+        /* 200vh keeps frame animation but drastically reduces scroll */
+        height: '200vh',
+        background: 'var(--bg-primary)',
+        transition: 'background 0.5s ease',
       }}
     >
       {/* ── Sticky viewport ── */}

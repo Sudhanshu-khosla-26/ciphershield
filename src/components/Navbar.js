@@ -4,10 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 
 const navLinks = [
   { label: 'Services', href: '#services' },
-  { label: 'About', href: '#about' },
-  { label: 'Security', href: '#secured' },
-  { label: 'Membership', href: '#membership' },
   { label: 'Testimonials', href: '#testimonials' },
+  { label: 'Contact', href: '#contact' },
 ];
 
 export default function Navbar() {

@@ -23,7 +23,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${orbitron.variable} ${spaceGrotesk.variable}`}>
-      <body className="min-h-screen bg-[#020407] text-[#f0fff4] antialiased overflow-x-hidden">
+      <body className="min-h-screen antialiased overflow-x-hidden" style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)', transition: 'background 0.5s ease, color 0.5s ease' }}>
         {children}
       </body>
     </html>
