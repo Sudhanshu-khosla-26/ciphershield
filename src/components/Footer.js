@@ -1,6 +1,4 @@
-'use client';
-
-import Link from 'next/link';
+﻿'use client';
 
 const footerLinks = {
   Services: ['MDR', 'Cloud Security', 'Red Team', 'Identity & Access', 'OT/ICS Security', 'Incident Response'],
@@ -12,31 +10,28 @@ const footerLinks = {
 export default function Footer() {
   return (
     <footer
-      id="contact"
+      id="footer"
       style={{
         position: 'relative',
         background: 'var(--footer-bg)',
         transition: 'background 0.5s ease',
-        borderTop: '1px solid rgba(0,255,127,0.08)',
+        borderTop: '1px solid var(--nav-border)',
         overflow: 'hidden',
       }}
     >
       {/* Top glow */}
       <div style={{
-        position: 'absolute',
-        top: 0,
-        left: '50%',
+        position: 'absolute', top: 0, left: '50%',
         transform: 'translateX(-50%)',
-        width: '600px',
-        height: '1px',
-        background: 'linear-gradient(90deg, transparent, rgba(0,255,127,0.3), transparent)',
+        width: '600px', height: '1px',
+        background: `linear-gradient(90deg, transparent, var(--footer-glow), transparent)`,
         pointerEvents: 'none',
       }} />
 
       {/* CTA Banner */}
       <div style={{
-        background: 'linear-gradient(135deg, rgba(0,255,127,0.06) 0%, rgba(0,30,15,0.15) 100%)',
-        borderBottom: '1px solid rgba(0,255,127,0.08)',
+        background: 'var(--footer-cta-bg)',
+        borderBottom: '1px solid var(--footer-cta-border)',
         padding: '60px 32px',
         textAlign: 'center',
       }}>
@@ -45,23 +40,20 @@ export default function Footer() {
             fontFamily: 'var(--font-orbitron), monospace',
             fontSize: 'clamp(24px, 4vw, 44px)',
             fontWeight: '800',
-            color: '#f0fff4',
+            color: 'var(--footer-heading)',
             marginBottom: '16px',
             letterSpacing: '-0.5px',
           }}>
             Ready to <span style={{
-              background: 'linear-gradient(135deg, #00ff7f, #00c45a)',
-              backgroundClip: 'text',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
+              background: 'linear-gradient(135deg, #6366F1, #818CF8)',
+              backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
             }}>secure</span> your organization?
           </h2>
           <p style={{
             fontFamily: 'var(--font-space-grotesk), sans-serif',
             fontSize: '16px',
-            color: 'rgba(240,255,244,0.55)',
-            marginBottom: '36px',
-            lineHeight: '1.7',
+            color: 'var(--footer-text)',
+            marginBottom: '36px', lineHeight: '1.7',
           }}>
             Book a free 30-minute security assessment with our elite team. No sales pressure — just expertise.
           </p>
@@ -84,35 +76,32 @@ export default function Footer() {
         <div style={{
           display: 'grid',
           gridTemplateColumns: '280px repeat(4, 1fr)',
-          gap: '40px',
-          marginBottom: '48px',
+          gap: '40px', marginBottom: '48px',
         }} className="footer-grid">
           {/* Brand */}
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
               <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '32px', height: '32px' }}>
-                <polygon points="18,2 33,10 33,26 18,34 3,26 3,10" stroke="#00ff7f" strokeWidth="1.5" fill="rgba(0,255,127,0.07)" />
-                <path d="M18 10 L18 20 M13 14 Q18 8 23 14" stroke="#00ff7f" strokeWidth="1.8" strokeLinecap="round" fill="none" />
-                <circle cx="18" cy="22" r="2" fill="#00ff7f" />
+                <polygon points="18,2 33,10 33,26 18,34 3,26 3,10" stroke="var(--accent-green)" strokeWidth="1.5" fill="rgba(0,255,127,0.07)" />
+                <path d="M18 10 L18 20 M13 14 Q18 8 23 14" stroke="var(--accent-green)" strokeWidth="1.8" strokeLinecap="round" fill="none" />
+                <circle cx="18" cy="22" r="2" fill="var(--accent-green)" />
               </svg>
               <span style={{
                 fontFamily: 'var(--font-orbitron), monospace',
-                fontSize: '16px',
-                fontWeight: '800',
+                fontSize: '16px', fontWeight: '800',
                 letterSpacing: '2px',
-                color: '#f0fff4',
+                color: 'var(--footer-heading)',
               }}>
-                CIPHER<span style={{ color: '#00ff7f' }}>SHIELD</span>
+                ARITARO
               </span>
             </div>
             <p style={{
               fontFamily: 'var(--font-space-grotesk), sans-serif',
               fontSize: '14px',
-              color: 'rgba(240,255,244,0.45)',
-              lineHeight: '1.7',
-              marginBottom: '24px',
+              color: 'var(--footer-desc)',
+              lineHeight: '1.7', marginBottom: '24px',
             }}>
-              Elite cybersecurity for enterprises that can't afford to fail. Defending digital assets since 2014.
+              Elite cybersecurity for enterprises that can&apos;t afford to fail. Defending digital assets since 2014.
             </p>
             {/* Certifications */}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
@@ -121,10 +110,10 @@ export default function Footer() {
                   fontFamily: 'var(--font-orbitron), monospace',
                   fontSize: '9px',
                   padding: '4px 10px',
-                  background: 'rgba(0,255,127,0.05)',
-                  border: '1px solid rgba(0,255,127,0.12)',
+                  background: 'var(--footer-cert-bg)',
+                  border: '1px solid var(--footer-cert-border)',
                   borderRadius: '4px',
-                  color: 'rgba(0,255,127,0.7)',
+                  color: 'var(--footer-cert-text)',
                   letterSpacing: '1px',
                 }}>
                   {cert}
@@ -138,10 +127,9 @@ export default function Footer() {
             <div key={section}>
               <h4 style={{
                 fontFamily: 'var(--font-orbitron), monospace',
-                fontSize: '11px',
-                fontWeight: '600',
+                fontSize: '11px', fontWeight: '600',
                 letterSpacing: '2px',
-                color: '#00ff7f',
+                color: 'var(--footer-section-title)',
                 marginBottom: '20px',
               }}>
                 {section.toUpperCase()}
@@ -154,12 +142,12 @@ export default function Footer() {
                       style={{
                         fontFamily: 'var(--font-space-grotesk), sans-serif',
                         fontSize: '14px',
-                        color: 'rgba(240,255,244,0.45)',
+                        color: 'var(--footer-link)',
                         textDecoration: 'none',
                         transition: 'color 0.2s',
                       }}
-                      onMouseEnter={(e) => e.currentTarget.style.color = '#00ff7f'}
-                      onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(240,255,244,0.45)'}
+                      onMouseEnter={(e) => e.currentTarget.style.color = 'var(--footer-link-hover)'}
+                      onMouseLeave={(e) => e.currentTarget.style.color = 'var(--footer-link)'}
                     >
                       {link}
                     </a>
@@ -173,32 +161,29 @@ export default function Footer() {
         {/* Bottom bar */}
         <div style={{
           paddingTop: '24px',
-          borderTop: '1px solid rgba(0,255,127,0.07)',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '16px',
+          borderTop: '1px solid var(--footer-bottom-border)',
+          display: 'flex', justifyContent: 'space-between',
+          alignItems: 'center', flexWrap: 'wrap', gap: '16px',
         }}>
           <p style={{
             fontFamily: 'var(--font-space-grotesk), sans-serif',
             fontSize: '13px',
-            color: 'rgba(240,255,244,0.3)',
+            color: 'var(--footer-copyright)',
           }}>
-            © 2024 CipherShield Security Inc. All rights reserved.
+            © 2024 Aritaro Pvt Limited. All rights reserved.
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{
               width: '6px', height: '6px',
               borderRadius: '50%',
-              background: '#00ff7f',
-              boxShadow: '0 0 8px #00ff7f',
+              background: 'var(--accent-green)',
+              boxShadow: '0 0 8px var(--accent-green)',
               animation: 'pulse-glow 2s ease-in-out infinite',
             }} />
             <span style={{
               fontFamily: 'var(--font-space-grotesk), sans-serif',
               fontSize: '13px',
-              color: 'rgba(240,255,244,0.4)',
+              color: 'var(--footer-status-text)',
             }}>
               All systems operational
             </span>

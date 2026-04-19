@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
@@ -53,7 +53,7 @@ const plans = [
     description: 'Mission-critical security for large enterprises, governments, and critical infrastructure.',
     features: [
       'Everything in Guardian',
-      'Dedicated CipherShield team',
+      'Dedicated Aritaro team',
       'OT/ICS security operations',
       'Quarterly red team ops',
       'Board-level reporting',
@@ -178,7 +178,7 @@ export default function MembershipSection() {
             lineHeight: '1.7',
             fontFamily: 'var(--font-space-grotesk), sans-serif',
           }}>
-            Scalable security plans designed to grow with your organization's evolving threat landscape.
+            Scalable security plans designed to grow with your organization&apos;s evolving threat landscape.
           </p>
 
           {/* Billing toggle */}

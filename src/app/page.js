@@ -1,23 +1,29 @@
 import SmoothScrollProvider from '@/components/SmoothScrollProvider';
 import Navbar from '@/components/Navbar';
-import HeroSection from '@/components/HeroSection';
-// import SecuredSection from '@/components/SecuredSection';  // Commented out to reduce scroll
+import HomePage from '@/components/HomePage';
 import ServicesSection from '@/components/ServicesSection';
-// import MembershipSection from '@/components/MembershipSection';  // Commented out to reduce scroll
+import WhyChooseUs from '@/components/WhyChooseUs';
+import AboutSection from '@/components/AboutSection';
 import TestimonialsSection from '@/components/TestimonialsSection';
+import ContactSection from '@/components/ContactSection';
 import Footer from '@/components/Footer';
 import ThemeToggle from '@/components/ThemeToggle';
+import LeadPopup from '@/components/LeadPopup';
 
 export default function Home() {
   return (
     <SmoothScrollProvider>
-      <main style={{ background: 'var(--bg-primary)', minHeight: '100vh', transition: 'background 0.5s ease' }}>
+      <main style={{ minHeight: '100vh' }}>
         <Navbar />
-        <HeroSection />
+        <HomePage />
         <ServicesSection />
+        <WhyChooseUs />
+        <AboutSection />
         <TestimonialsSection />
+        <ContactSection />
         <Footer />
         <ThemeToggle />
+        <LeadPopup />
       </main>
     </SmoothScrollProvider>
   );

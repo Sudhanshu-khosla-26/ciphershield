@@ -324,7 +324,7 @@ export default function HeroSection() {
           position: 'absolute',
           inset: 0,
           backgroundImage:
-            'linear-gradient(rgba(0,255,127,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(0,255,127,0.025) 1px, transparent 1px)',
+            'linear-gradient(rgba(99,102,241,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(99,102,241,0.025) 1px, transparent 1px)',
           backgroundSize: '60px 60px',
           zIndex: 2,
           pointerEvents: 'none',
@@ -335,7 +335,7 @@ export default function HeroSection() {
           position: 'absolute',
           left: 0, right: 0,
           height: '1px',
-          background: 'linear-gradient(90deg, transparent, rgba(0,255,127,0.35), transparent)',
+          background: 'linear-gradient(90deg, transparent, rgba(129,140,248,0.35), transparent)',
           animation: 'scan-line 5s linear infinite',
           zIndex: 3,
           pointerEvents: 'none',
@@ -366,18 +366,18 @@ export default function HeroSection() {
               marginTop: '42px',
               lineHeight: '0.95',
               letterSpacing: '-1px',
-              color: '#f0fff4',
+              color: '#f0f0ff',
             }}>
               <span style={{
                 display: 'block',
-                background: 'linear-gradient(135deg, #f0fff4 0%, #a8ffd4 100%)',
+                background: 'linear-gradient(135deg, #f0f0ff 0%, #c4b5fd 100%)',
                 backgroundClip: 'text',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
               }}>DEFEND.</span>
               <span style={{
                 display: 'block',
-                background: 'linear-gradient(135deg, #00ff7f 0%, #7fffb2 100%)',
+                background: 'linear-gradient(135deg, #6366F1 0%, #818CF8 100%)',
                 backgroundClip: 'text',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
@@ -397,13 +397,13 @@ export default function HeroSection() {
             maxWidth: '560px',
             fontSize: 'clamp(14px, 1.8vw, 18px)',
             lineHeight: '1.7',
-            color: 'rgba(240,255,244,0.72)',
+            color: 'rgba(240,240,255,0.72)',
             marginBottom: '20px',
             fontFamily: 'var(--font-space-grotesk), sans-serif',
           }}>
-            CipherShield delivers military-grade cybersecurity for enterprises operating
+            Aritaro Pvt Limited delivers military-grade cybersecurity for enterprises operating
             in a world of persistent, evolving threats.{' '}
-            <span style={{ color: 'rgba(0,255,127,0.9)' }}>Zero-trust. Zero-compromise.</span>
+            <span style={{ color: 'rgba(129,140,248,0.9)' }}>Zero-trust. Zero-compromise.</span>
           </p>
 
           {/* CTA buttons */}
@@ -418,7 +418,7 @@ export default function HeroSection() {
               Watch Demo
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
                 <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" />
-                <polygon points="10,8 16,12 10,16" fill="#00ff7f" />
+                <polygon points="10,8 16,12 10,16" fill="#6366F1" />
               </svg>
             </button>
           </div>
@@ -451,8 +451,8 @@ export default function HeroSection() {
                 fontFamily: 'var(--font-orbitron), monospace',
                 fontSize: 'clamp(18px, 2.5vw, 26px)',
                 fontWeight: '700',
-                color: '#00ff7f',
-                textShadow: '0 0 20px rgba(0,255,127,0.45)',
+                color: '#818CF8',
+                textShadow: '0 0 20px rgba(99,102,241,0.45)',
                 lineHeight: 1,
               }}>
                 {stat.value}
@@ -460,7 +460,7 @@ export default function HeroSection() {
               <div style={{
                 fontFamily: 'var(--font-space-grotesk), sans-serif',
                 fontSize: '11px',
-                color: 'rgba(240,255,244,0.45)',
+                color: 'rgba(240,240,255,0.45)',
                 letterSpacing: '1.2px',
                 marginTop: '6px',
                 textTransform: 'uppercase',
@@ -487,13 +487,13 @@ export default function HeroSection() {
             fontFamily: 'var(--font-orbitron), monospace',
             fontSize: '9px',
             letterSpacing: '3px',
-            color: '#00ff7f',
+            color: '#818CF8',
             writingMode: 'vertical-rl',
           }}>SCROLL</span>
           <div style={{
             width: '1px',
             height: '44px',
-            background: 'linear-gradient(to bottom, #00ff7f, transparent)',
+            background: 'linear-gradient(to bottom, #818CF8, transparent)',
             animation: 'pulse-glow 2s ease-in-out infinite',
           }} />
         </div>

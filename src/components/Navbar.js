@@ -1,10 +1,12 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 
 const navLinks = [
   { label: 'Services', href: '#services' },
-  { label: 'Testimonials', href: '#testimonials' },
+  { label: 'Why Us', href: '#why-choose-us' },
+  { label: 'About', href: '#about' },
   { label: 'Contact', href: '#contact' },
 ];
 
@@ -31,7 +33,6 @@ export default function Navbar() {
     }
     const el = document.querySelector(href);
     if (el) {
-      // Account for sticky navbar height
       const yOffset = -72;
       const y = el.getBoundingClientRect().top + window.scrollY + yOffset;
       window.scrollTo({ top: y, behavior: 'smooth' });
@@ -41,6 +42,7 @@ export default function Navbar() {
   return (
     <nav
       ref={navRef}
+      className={`navbar${scrolled ? ' navbar-scrolled' : ''}`}
       style={{
         position: 'fixed',
         top: 0,
@@ -48,25 +50,11 @@ export default function Navbar() {
         right: 0,
         zIndex: 1000,
         transition: 'all 0.5s cubic-bezier(0.23, 1, 0.32, 1)',
-        padding: scrolled ? '12px 0' : '20px 0',
-        background: scrolled
-          ? 'rgba(2, 4, 7, 0.85)'
-          : 'transparent',
-        backdropFilter: scrolled ? 'blur(24px) saturate(180%)' : 'none',
-        WebkitBackdropFilter: scrolled ? 'blur(24px) saturate(180%)' : 'none',
-        borderBottom: scrolled ? '1px solid rgba(0, 255, 127, 0.08)' : 'none',
-        boxShadow: scrolled ? '0 4px 30px rgba(0, 0, 0, 0.5)' : 'none',
+        padding: scrolled ? '8px 16px' : '14px 0',
       }}
     >
-      <div style={{
-        maxWidth: '1280px',
-        margin: '0 auto',
-        padding: '0 32px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-      }}>
-        {/* Logo — click scrolls to top */}
+      <div className="navbar-inner">
+        {/* Logo */}
         <button
           onClick={() => handleNavClick('#top')}
           style={{
@@ -80,40 +68,33 @@ export default function Navbar() {
             padding: 0,
           }}
         >
+          {/* Logo image */}
           <div style={{
-            width: '36px',
-            height: '36px',
+            width: scrolled ? '36px' : '44px',
+            height: scrolled ? '36px' : '44px',
+            transition: 'all 0.4s ease',
             position: 'relative',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            flexShrink: 0,
+            filter: 'drop-shadow(0 0 8px rgba(99, 102, 241, 0.5))',
           }}>
-            {/* Hexagon shield logo */}
-            <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%' }}>
-              <polygon
-                points="18,2 33,10 33,26 18,34 3,26 3,10"
-                stroke="#00ff7f"
-                strokeWidth="1.5"
-                fill="rgba(0,255,127,0.07)"
-              />
-              <path
-                d="M18 10 L18 20 M13 14 Q18 8 23 14"
-                stroke="#00ff7f"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                fill="none"
-              />
-              <circle cx="18" cy="22" r="2" fill="#00ff7f" />
-            </svg>
+            <Image
+              src="/aritaro-logo.png"
+              alt="Aritaro Logo"
+              fill
+              sizes="64px"
+              style={{ objectFit: 'contain' }}
+              priority
+            />
           </div>
           <span style={{
             fontFamily: 'var(--font-orbitron), monospace',
-            fontSize: '18px',
+            fontSize: scrolled ? '15px' : '18px',
             fontWeight: '800',
-            letterSpacing: '2px',
-            color: '#f0fff4',
+            letterSpacing: '2.5px',
+            color: 'var(--nav-logo-text)',
+            transition: 'all 0.4s ease',
           }}>
-            CIPHER<span style={{ color: '#00ff7f' }}>SHIELD</span>
+            ARITARO
           </span>
         </button>
 
@@ -121,7 +102,7 @@ export default function Navbar() {
         <div style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '8px',
+          gap: '4px',
         }} className="hidden-mobile">
           {navLinks.map((link) => (
             <button
@@ -133,34 +114,24 @@ export default function Navbar() {
                 cursor: 'pointer',
                 padding: '8px 16px',
                 fontFamily: 'var(--font-space-grotesk), sans-serif',
-                fontSize: '14px',
+                fontSize: '13px',
                 fontWeight: '500',
                 letterSpacing: '0.5px',
-                color: activeLink === link.href ? '#00ff7f' : 'rgba(240, 255, 244, 0.7)',
+                color: activeLink === link.href ? 'var(--cyan-primary)' : 'var(--nav-text)',
                 position: 'relative',
                 transition: 'color 0.3s ease',
+                borderRadius: '8px',
               }}
               onMouseEnter={(e) => {
-                if (activeLink !== link.href) e.currentTarget.style.color = '#f0fff4';
+                if (activeLink !== link.href) e.currentTarget.style.color = 'var(--nav-text-hover)';
+                e.currentTarget.style.background = 'rgba(99,102,241,0.05)';
               }}
               onMouseLeave={(e) => {
-                if (activeLink !== link.href) e.currentTarget.style.color = 'rgba(240, 255, 244, 0.7)';
+                if (activeLink !== link.href) e.currentTarget.style.color = 'var(--nav-text)';
+                e.currentTarget.style.background = 'none';
               }}
             >
               {link.label}
-              {/* {activeLink === link.href && (
-                <span style={{
-                  position: 'absolute',
-                  bottom: '2px',
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  width: '4px',
-                  height: '4px',
-                  borderRadius: '50%',
-                  background: '#00ff7f',
-                  boxShadow: '0 0 8px #00ff7f',
-                }} />
-              )} */}
             </button>
           ))}
         </div>
@@ -170,7 +141,12 @@ export default function Navbar() {
           <button
             onClick={() => handleNavClick('#contact')}
             className="btn-primary"
-            style={{ fontSize: '12px', padding: '10px 24px', borderRadius: '4px' }}
+            style={{
+              fontSize: '11px',
+              padding: scrolled ? '8px 18px' : '10px 24px',
+              borderRadius: '4px',
+              transition: 'all 0.4s ease',
+            }}
           >
             <span>Get Protected</span>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -184,11 +160,11 @@ export default function Navbar() {
             style={{
               display: 'none',
               background: 'none',
-              border: '1px solid rgba(0,255,127,0.3)',
+              border: '1px solid rgba(99,102,241,0.3)',
               borderRadius: '6px',
               padding: '8px',
               cursor: 'pointer',
-              color: '#00ff7f',
+              color: 'var(--cyan-primary)',
             }}
             className="mobile-menu-btn"
             aria-label="Toggle menu"
@@ -211,11 +187,10 @@ export default function Navbar() {
         <div style={{
           position: 'absolute',
           top: '100%',
-          left: 0,
-          right: 0,
-          background: 'rgba(2, 4, 7, 0.97)',
+          left: 0, right: 0,
+          background: 'var(--mobile-menu-bg)',
           backdropFilter: 'blur(24px)',
-          borderBottom: '1px solid rgba(0, 255, 127, 0.12)',
+          borderBottom: '1px solid var(--mobile-menu-border)',
           padding: '20px 32px',
           display: 'flex',
           flexDirection: 'column',
@@ -233,9 +208,9 @@ export default function Navbar() {
                 fontFamily: 'var(--font-space-grotesk), sans-serif',
                 fontSize: '16px',
                 fontWeight: '500',
-                color: 'rgba(240, 255, 244, 0.8)',
+                color: 'var(--nav-text)',
                 textAlign: 'left',
-                borderBottom: '1px solid rgba(0, 255, 127, 0.06)',
+                borderBottom: '1px solid var(--nav-border)',
                 transition: 'color 0.2s',
               }}
             >

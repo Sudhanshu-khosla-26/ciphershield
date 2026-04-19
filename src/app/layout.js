@@ -1,4 +1,4 @@
-import { Orbitron, Space_Grotesk } from "next/font/google";
+import { Orbitron, Inter } from "next/font/google";
 import "./globals.css";
 
 const orbitron = Orbitron({
@@ -7,23 +7,27 @@ const orbitron = Orbitron({
   weight: ["400", "500", "600", "700", "800", "900"],
 });
 
-const spaceGrotesk = Space_Grotesk({
+// Using Inter as body font — reusing the same CSS var name so all components stay compatible
+const inter = Inter({
   variable: "--font-space-grotesk",
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
 });
 
 export const metadata = {
-  title: "CipherShield | Elite Cybersecurity Solutions",
+  title: "Aritaro Pvt Limited | Elite Cybersecurity Services",
   description:
-    "CipherShield provides enterprise-grade cybersecurity solutions, threat intelligence, and zero-trust security frameworks for organizations worldwide.",
-  keywords: "cybersecurity, threat intelligence, zero trust, network security, penetration testing",
+    "Aritaro Pvt Limited is a next-generation AI-powered cybersecurity and automation platform specialising in penetration testing, threat intelligence, and intelligent process automation for enterprises worldwide.",
+  keywords: "cybersecurity, AI automation, penetration testing, SOC, incident response, cloud security, compliance, chatbot development, aritaro",
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${orbitron.variable} ${spaceGrotesk.variable}`}>
-      <body className="min-h-screen antialiased overflow-x-hidden" style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)', transition: 'background 0.5s ease, color 0.5s ease' }}>
+    <html lang="en" className={`${orbitron.variable} ${inter.variable}`}>
+      <body
+        className="min-h-screen antialiased overflow-x-hidden"
+        style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)', transition: 'background 0.5s ease, color 0.5s ease' }}
+      >
         {children}
       </body>
     </html>
