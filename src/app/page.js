@@ -1,10 +1,11 @@
 import SmoothScrollProvider from '@/components/SmoothScrollProvider';
 import Navbar from '@/components/Navbar';
-import HomePage from '@/components/HomePage';
+import HeroSection from '@/components/HeroSection';
 import ServicesSection from '@/components/ServicesSection';
 import WhyChooseUs from '@/components/WhyChooseUs';
 import AboutSection from '@/components/AboutSection';
 import TestimonialsSection from '@/components/TestimonialsSection';
+import PricingSection from '@/components/PricingSection';
 import ContactSection from '@/components/ContactSection';
 import Footer from '@/components/Footer';
 import ThemeToggle from '@/components/ThemeToggle';
@@ -15,11 +16,12 @@ export default function Home() {
     <SmoothScrollProvider>
       <main style={{ minHeight: '100vh' }}>
         <Navbar />
-        <HomePage />
+        <HeroSection />
         <ServicesSection />
         <WhyChooseUs />
         <AboutSection />
         <TestimonialsSection />
+        <PricingSection />
         <ContactSection />
         <Footer />
         <ThemeToggle />
