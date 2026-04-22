@@ -1,6 +1,6 @@
-﻿'use client';
+'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
@@ -16,6 +16,9 @@ export default function AboutSection() {
   const sectionRef = useRef(null);
   const leftRef    = useRef(null);
   const rightRef   = useRef(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -118,15 +121,17 @@ export default function AboutSection() {
               position: 'relative',
               aspectRatio: '16/10',
             }}>
-              <video
-                autoPlay
-                muted
-                loop
-                playsInline
-                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-              >
-                <source src="/grok-video-be4a4f39-a70b-41ec-af1d-5cf4d274b1aa.mp4" type="video/mp4" />
-              </video>
+              {mounted && (
+                <video
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                >
+                  <source src="/grok-video-be4a4f39-a70b-41ec-af1d-5cf4d274b1aa.mp4" type="video/mp4" />
+                </video>
+              )}
               {/* Overlay tint */}
               <div style={{
                 position: 'absolute', inset: 0,

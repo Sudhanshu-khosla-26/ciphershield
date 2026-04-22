@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
@@ -128,6 +128,250 @@ const services = [
   },
 ];
 
+/* ─── Spring-physics tilt card ──────────────────────── */
+/*
+  Uses a per-frame lerp loop so rotX/rotY *chase* the target
+  at ~8% per frame — giving a smooth, elastic follow-through
+  instead of instant snap.
+*/
+function SpringTiltCard({ service, cardRef: externalRef }) {
+  const cardRef = useRef(null);
+  const glowRef = useRef(null);
+  const shimRef = useRef(null);
+  const rafRef = useRef(null);
+  const stateRef = useRef({
+    active: false,
+    targetX: 0, targetY: 0,
+    currentX: 0, currentY: 0,
+    glowX: 50, glowY: 50,
+  });
+
+  const isThreat = service.color === '#FF3D5A';
+  const accentRGB = isThreat ? '255,61,90' : '99,102,241';
+
+  /* spring loop — runs only while hovered */
+  const springLoop = useCallback(() => {
+    const s = stateRef.current;
+    if (!s.active) return;
+
+    const LERP = 0.09; // ← smaller = more lag = smoother
+    s.currentX += (s.targetX - s.currentX) * LERP;
+    s.currentY += (s.targetY - s.currentY) * LERP;
+
+    if (cardRef.current) {
+      cardRef.current.style.transform =
+        `perspective(800px) rotateX(${s.currentX}deg) rotateY(${s.currentY}deg) translateZ(8px) scale3d(1.015,1.015,1)`;
+    }
+
+    if (glowRef.current) {
+      glowRef.current.style.background =
+        `radial-gradient(circle at ${s.glowX}% ${s.glowY}%, rgba(${accentRGB},0.18) 0%, transparent 65%)`;
+    }
+
+    // keep running until we're visually settled
+    const settled =
+      Math.abs(s.currentX) < 0.02 &&
+      Math.abs(s.currentY) < 0.02 &&
+      Math.abs(s.targetX) < 0.02 &&
+      Math.abs(s.targetY) < 0.02;
+    if (!settled) rafRef.current = requestAnimationFrame(springLoop);
+  }, [accentRGB]);
+
+  const handleMouseMove = useCallback((e) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const nx = ((e.clientX - rect.left) / rect.width - 0.5) * 2; // -1 → 1
+    const ny = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+
+    const s = stateRef.current;
+    s.targetX = -ny * 11;
+    s.targetY = nx * 11;
+    s.glowX = ((nx + 1) / 2) * 100;
+    s.glowY = ((ny + 1) / 2) * 100;
+  }, []);
+
+  const handleEnter = useCallback(() => {
+    stateRef.current.active = true;
+    if (shimRef.current) shimRef.current.style.opacity = '1';
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(springLoop);
+  }, [springLoop]);
+
+  const handleLeave = useCallback(() => {
+    const s = stateRef.current;
+    s.active = false;
+    s.targetX = 0;
+    s.targetY = 0;
+
+    if (shimRef.current) shimRef.current.style.opacity = '0';
+    if (glowRef.current) glowRef.current.style.background = 'none';
+
+    // let spring settle back to zero
+    const settleBack = () => {
+      const LERP = 0.09;
+      s.currentX += (0 - s.currentX) * LERP;
+      s.currentY += (0 - s.currentY) * LERP;
+
+      if (cardRef.current) {
+        cardRef.current.style.transform =
+          `perspective(800px) rotateX(${s.currentX}deg) rotateY(${s.currentY}deg) translateZ(0) scale3d(1,1,1)`;
+      }
+
+      if (Math.abs(s.currentX) > 0.02 || Math.abs(s.currentY) > 0.02) {
+        rafRef.current = requestAnimationFrame(settleBack);
+      } else {
+        if (cardRef.current) {
+          cardRef.current.style.transform = '';
+        }
+      }
+    };
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(settleBack);
+  }, []);
+
+  // merge external ref (for gsap scroll anim) + internal ref
+  const setRef = useCallback((el) => {
+    cardRef.current = el;
+    if (typeof externalRef === 'function') externalRef(el);
+    else if (externalRef) externalRef.current = el;
+  }, [externalRef]);
+
+  useEffect(() => () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); }, []);
+
+  return (
+    <div
+      ref={setRef}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={handleEnter}
+      onMouseLeave={handleLeave}
+      style={{
+        position: 'relative',
+        background: '',
+        border: `1px solid var(--service-card-border)`,
+        borderRadius: 16,
+        padding: '26px 22px',
+        cursor: 'default',
+        willChange: 'transform',
+        transformStyle: 'preserve-3d',
+        overflow: 'hidden',
+        boxShadow: 'var(--service-card-shadow)',
+        /* border transition handled by CSS class */
+      }}
+      className="s-card"
+    >
+      {/* Spotlight glow (cursor tracked) */}
+      <div ref={glowRef} style={{
+        position: 'absolute', inset: 0,
+        borderRadius: 'inherit',
+        pointerEvents: 'none',
+        transition: 'background 0.04s',
+      }} />
+
+      {/* Hover border overlay */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        borderRadius: 'inherit',
+        border: `1px solid rgba(${accentRGB},0)`,
+        pointerEvents: 'none',
+        transition: 'border-color 0.35s ease',
+      }} className="s-card-border" />
+
+      {/* Bottom shimmer line */}
+      <div ref={shimRef} style={{
+        position: 'absolute', bottom: 0, left: 0, right: 0, height: 2,
+        background: `linear-gradient(90deg, transparent, rgba(${accentRGB},0.8), transparent)`,
+        borderRadius: '0 0 16px 16px',
+        opacity: 0,
+        transition: 'opacity 0.4s ease',
+        pointerEvents: 'none',
+      }} />
+
+      {/* Card content */}
+      <div style={{ position: 'relative', zIndex: 1 }}>
+
+        {/* Number badge */}
+        <span style={{
+          fontFamily: 'var(--font-mono)',
+          fontSize: 9, fontWeight: 700,
+          color: isThreat ? 'rgba(255,61,90,0.4)' : 'rgba(99,102,241,0.35)',
+          letterSpacing: '1px',
+          display: 'block',
+          marginBottom: 12,
+        }}>
+          {service.number}
+        </span>
+
+        {/* Icon */}
+        <div
+          className="s-icon"
+          style={{
+            width: 44, height: 44,
+            borderRadius: 10,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: service.color,
+            background: isThreat ? 'rgba(255,61,90,0.06)' : 'rgba(99,102,241,0.07)',
+            border: `1px solid ${isThreat ? 'rgba(255,61,90,0.15)' : 'rgba(99,102,241,0.15)'}`,
+            marginBottom: 16,
+            transition: 'all 0.35s ease',
+          }}
+        >
+          {service.icon}
+        </div>
+
+        {/* Title */}
+        <h3 style={{
+          fontFamily: 'var(--font-sans)',
+          fontSize: 'clamp(12px, 1.2vw, 14px)',
+          fontWeight: 700,
+          color: 'var(--text-primary)',
+          marginBottom: 10,
+          lineHeight: 1.35,
+        }}>
+          {service.title}
+        </h3>
+
+        {/* Description */}
+        <p style={{
+          fontSize: 12,
+          color: 'var(--text-muted)',
+          lineHeight: 1.75,
+          marginBottom: 16,
+        }}>
+          {service.desc}
+        </p>
+
+        {/* Feature tags */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+          {service.features.map((f) => (
+            <span
+              key={f}
+              className="feature-tag"
+              style={isThreat ? {
+                background: 'rgba(255,61,90,0.05)',
+                borderColor: 'rgba(255,61,90,0.14)',
+                color: '#FF3D5A',
+              } : {}}
+            >
+              {f}
+            </span>
+          ))}
+        </div>
+
+        {/* Bottom accent line */}
+        <div style={{
+          marginTop: 18, height: 1,
+          background: isThreat
+            ? 'linear-gradient(90deg, rgba(255,61,90,0.25), transparent 70%)'
+            : 'linear-gradient(90deg, rgba(99,102,241,0.2), transparent 70%)',
+        }} />
+      </div>
+    </div>
+  );
+}
+
+/* ─── Section ───────────────────────────────────────── */
 export default function ServicesSection() {
   const sectionRef = useRef(null);
   const headingRef = useRef(null);
@@ -136,22 +380,14 @@ export default function ServicesSection() {
   useEffect(() => {
     const ctx = gsap.context(() => {
       gsap.from(headingRef.current, {
-        scrollTrigger: {
-          trigger: headingRef.current,
-          start: 'top 82%',
-          toggleActions: 'play none none reverse',
-        },
+        scrollTrigger: { trigger: headingRef.current, start: 'top 82%', toggleActions: 'play none none reverse' },
         y: 60, opacity: 0, duration: 1.1, ease: 'power3.out',
       });
 
       cardsRef.current.forEach((card, i) => {
         if (!card) return;
         gsap.from(card, {
-          scrollTrigger: {
-            trigger: card,
-            start: 'top 90%',
-            toggleActions: 'play none none reverse',
-          },
+          scrollTrigger: { trigger: card, start: 'top 90%', toggleActions: 'play none none reverse' },
           y: 70, opacity: 0, duration: 0.85,
           delay: (i % 4) * 0.10,
           ease: 'power3.out',
@@ -172,66 +408,53 @@ export default function ServicesSection() {
         overflow: 'hidden',
       }}
     >
-      {/* Background decorations */}
+      {/* Bg decorations */}
       <div style={{
-        position: 'absolute', top: '0', left: '0', right: '0', bottom: '0',
+        position: 'absolute', inset: 0,
         background: 'radial-gradient(ellipse 80% 50% at 50% 0%, rgba(99,102,241,0.04) 0%, transparent 70%)',
         pointerEvents: 'none',
       }} />
       <div style={{
-        position: 'absolute', bottom: '0', left: '0', right: '0',
-        height: '1px',
+        position: 'absolute', bottom: 0, left: 0, right: 0, height: 1,
         background: 'linear-gradient(90deg, transparent, rgba(99,102,241,0.15), transparent)',
       }} />
+      <div className="cyber-grid" style={{ position: 'absolute', inset: 0, opacity: 0.6, pointerEvents: 'none' }} />
 
-      {/* Cyber grid */}
-      <div className="cyber-grid" style={{
-        position: 'absolute', inset: 0,
-        opacity: 0.6, pointerEvents: 'none',
-      }} />
+      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 24px', position: 'relative', zIndex: 1 }}>
 
-      <div style={{
-        maxWidth: '1280px', margin: '0 auto',
-        padding: '0 24px', position: 'relative', zIndex: 1,
-      }}>
-
-        {/* ── Section Heading ── */}
-        <div ref={headingRef} style={{ textAlign: 'center', marginBottom: '64px' }}>
-
-          {/* Badge */}
+        {/* Section heading */}
+        <div ref={headingRef} style={{ textAlign: 'center', marginBottom: 64 }}>
           <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: '8px',
+            display: 'inline-flex', alignItems: 'center', gap: 8,
             background: 'var(--glass-bg)',
             border: '1px solid var(--glass-border)',
-            borderRadius: '100px',
-            padding: '6px 20px',
-            marginBottom: '22px',
+            borderRadius: 100, padding: '6px 20px',
+            marginBottom: 22,
             backdropFilter: 'blur(12px)',
           }}>
             <span style={{
-              width: '6px', height: '6px',
-              borderRadius: '50%',
+              width: 6, height: 6, borderRadius: '50%',
               background: 'var(--cyan-primary)',
               boxShadow: '0 0 8px rgba(99,102,241,0.5)',
               animation: 'pulse-glow 2s ease-in-out infinite',
               flexShrink: 0,
             }} />
             <span style={{
-              fontFamily: 'var(--font-orbitron), monospace',
-              fontSize: '10px', letterSpacing: '2.5px',
-              color: 'var(--hero-badge-text)', fontWeight: '600',
+              fontFamily: 'var(--font-mono)',
+              fontSize: 10, letterSpacing: '2.5px',
+              color: 'var(--hero-badge-text)', fontWeight: 600,
             }}>
               CAPABILITIES
             </span>
           </div>
 
           <h2 style={{
-            fontFamily: 'var(--font-orbitron), monospace',
+            fontFamily: 'var(--font-sans)',
             fontSize: 'clamp(28px, 5vw, 54px)',
-            fontWeight: '900', lineHeight: '1.1',
+            fontWeight: 900, lineHeight: 1.1,
             letterSpacing: '-0.5px',
             color: 'var(--text-primary)',
-            marginBottom: '18px',
+            marginBottom: 18,
           }}>
             Intelligence that{' '}
             <span style={{
@@ -239,148 +462,31 @@ export default function ServicesSection() {
               backgroundClip: 'text',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
-              filter: 'drop-shadow(0 0 12px rgba(99,102,241,0.4))',
+              filter: 'drop-shadow(0 0 12px rgba(99,102,241,0.35))',
             }}>
               transforms
             </span>
           </h2>
 
           <p style={{
-            maxWidth: '540px', margin: '0 auto',
-            color: 'var(--text-secondary)',
-            fontSize: '16px', lineHeight: '1.75',
-            fontFamily: 'var(--font-space-grotesk), sans-serif',
+            maxWidth: 540, margin: '0 auto',
+            color: 'var(--text-muted)',
+            fontSize: 16, lineHeight: 1.75,
           }}>
             From intelligent automation to military-grade cybersecurity — we build the systems
             that give your business an unfair, unbeatable advantage.
           </p>
         </div>
 
-        {/* ── Services Grid ── */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(4, 1fr)',
-            gap: '18px',
-          }}
-          className="services-grid"
-        >
-          {services.map((service, i) => {
-            const isThreat = service.color === '#FF3D5A';
-            return (
-              <div
-                key={service.number}
-                ref={(el) => { cardsRef.current[i] = el; }}
-                className="service-card"
-                style={isThreat ? {
-                  '--card-hover-tint': 'rgba(255,61,90,0.08)',
-                  '--card-hover-border-color': 'rgba(255,61,90,0.45)',
-                  '--card-hover-box': '0 0 0 1px rgba(255,61,90,0.4), 0 12px 48px rgba(255,61,90,0.18)',
-                } : {}}
-                onMouseEnter={(e) => {
-                  if (isThreat) {
-                    e.currentTarget.style.borderColor = 'rgba(255,61,90,0.45)';
-                    e.currentTarget.style.boxShadow = '0 0 0 1px rgba(255,61,90,0.4), 0 12px 48px rgba(255,61,90,0.18), 0 0 100px rgba(255,61,90,0.06)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (isThreat) {
-                    e.currentTarget.style.borderColor = 'var(--service-card-border)';
-                    e.currentTarget.style.boxShadow = 'var(--service-card-shadow)';
-                  }
-                }}
-              >
-                {/* Card glow overlay (threat cards get red tint) */}
-                {isThreat && (
-                  <div style={{
-                    position: 'absolute', inset: 0,
-                    borderRadius: '16px',
-                    background: 'radial-gradient(ellipse at 50% 0%, rgba(255,61,90,0.07) 0%, transparent 60%)',
-                    opacity: 0,
-                    transition: 'opacity 0.45s ease',
-                    pointerEvents: 'none',
-                    zIndex: 0,
-                  }} className="threat-glow" />
-                )}
-
-                <div className="card-content">
-                  {/* Number */}
-                  <span style={{
-                    fontFamily: 'var(--font-orbitron), monospace',
-                    fontSize: '9px', fontWeight: '700',
-                    color: isThreat ? 'rgba(255,61,90,0.5)' : 'rgba(99,102,241,0.4)',
-                    letterSpacing: '1px',
-                    display: 'block',
-                    marginBottom: '12px',
-                  }}>
-                    {service.number}
-                  </span>
-
-                  {/* Icon */}
-                  <div
-                    className="service-icon-wrap"
-                    style={{
-                      color: service.color,
-                      background: isThreat ? 'rgba(255,61,90,0.06)' : 'rgba(99,102,241,0.06)',
-                      borderColor: isThreat ? 'rgba(255,61,90,0.15)' : 'rgba(99,102,241,0.15)',
-                    }}
-                  >
-                    {service.icon}
-                  </div>
-
-                  {/* Title */}
-                  <h3 style={{
-                    fontFamily: 'var(--font-orbitron), monospace',
-                    fontSize: 'clamp(11px, 1.2vw, 14px)',
-                    fontWeight: '700',
-                    color: 'var(--text-primary)',
-                    marginBottom: '10px',
-                    letterSpacing: '0.2px',
-                    lineHeight: '1.35',
-                  }}>
-                    {service.title}
-                  </h3>
-
-                  {/* Description */}
-                  <p style={{
-                    fontFamily: 'var(--font-space-grotesk), sans-serif',
-                    fontSize: '12px',
-                    color: 'var(--text-secondary)',
-                    lineHeight: '1.75',
-                    marginBottom: '16px',
-                  }}>
-                    {service.desc}
-                  </p>
-
-                  {/* Feature Tags */}
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
-                    {service.features.map((f) => (
-                      <span
-                        key={f}
-                        className="feature-tag"
-                        style={isThreat ? {
-                          background: 'rgba(255,61,90,0.05)',
-                          borderColor: 'rgba(255,61,90,0.14)',
-                          color: '#FF3D5A',
-                        } : {}}
-                      >
-                        {f}
-                      </span>
-                    ))}
-                  </div>
-
-                  {/* Bottom accent line */}
-                  <div style={{
-                    marginTop: '18px',
-                    height: '1px',
-                    background: isThreat
-                      ? 'linear-gradient(90deg, rgba(255,61,90,0.30), transparent 70%)'
-                      : 'linear-gradient(90deg, rgba(99,102,241,0.25), transparent 70%)',
-                  }} />
-                </div>
-              </div>
-            );
-          })}
+        {/* Cards grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 18 }} className="services-grid">
+          {services.map((service, i) => (
+            <SpringTiltCard
+              key={service.number}
+              service={service}
+              cardRef={(el) => { cardsRef.current[i] = el; }}
+            />
+          ))}
         </div>
       </div>
 
@@ -394,15 +500,19 @@ export default function ServicesSection() {
         @media (max-width: 560px) {
           .services-grid { grid-template-columns: 1fr !important; }
         }
-        .service-card:hover .threat-glow { opacity: 1 !important; }
-        .service-card:hover .service-icon-wrap[style*="61,90"] {
-          background: rgba(255,61,90,0.12) !important;
-          border-color: rgba(255,61,90,0.40) !important;
-          box-shadow: 0 0 24px rgba(255,61,90,0.18), 0 0 48px rgba(255,61,90,0.06) !important;
+
+        /* hover states driven by CSS for instant border feedback */
+        .s-card:hover {
+          border-color: transparent !important;
+          box-shadow: 0 20px 60px rgba(0,0,0,0.45), 0 0 0 1px rgba(99,102,241,0.3) !important;
         }
-        .service-card:hover .feature-tag[style*="61,90"] {
-          background: rgba(255,61,90,0.10) !important;
-          border-color: rgba(255,61,90,0.30) !important;
+        .s-card:hover .s-card-border {
+          border-color: rgba(99,102,241,0.5) !important;
+        }
+        .s-card:hover .s-icon {
+          background: rgba(99,102,241,0.15) !important;
+          border-color: rgba(99,102,241,0.4) !important;
+          box-shadow: 0 0 20px rgba(99,102,241,0.2) !important;
         }
       `}</style>
     </section>

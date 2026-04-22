@@ -96,7 +96,7 @@ function TestimonialCard({ t, style }) {
         margin: '0 12px',
         borderRadius: '14px',
         padding: '28px',
-        background: 'var(--testimonial-card-bg)',
+        background: '',
         border: '1px solid var(--testimonial-card-border)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',

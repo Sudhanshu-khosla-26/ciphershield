@@ -99,7 +99,7 @@ export default function PricingSection() {
       ref={sectionRef}
       style={{
         padding: '96px 0',
-        background: 'var(--bg-surface)',
+        background: '',
         position: 'relative',
       }}
     >

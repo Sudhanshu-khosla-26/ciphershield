@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 
 const reasons = [
   {
@@ -87,6 +87,242 @@ const reasons = [
   },
 ];
 
+/* ─── Spring-physics tilt card ──────────────────────── */
+function TiltCard({ reason, index, isHovered, onEnter, onLeave }) {
+  const cardRef = useRef(null);
+  const glowRef = useRef(null);
+  const shimRef = useRef(null);
+  const rafRef = useRef(null);
+  const stateRef = useRef({
+    active: false,
+    targetX: 0, targetY: 0,
+    currentX: 0, currentY: 0,
+    glowX: 50, glowY: 50,
+  });
+
+  const springLoop = useCallback(() => {
+    const s = stateRef.current;
+    if (!s.active) return;
+    const LERP = 0.09;
+    s.currentX += (s.targetX - s.currentX) * LERP;
+    s.currentY += (s.targetY - s.currentY) * LERP;
+    if (cardRef.current) {
+      cardRef.current.style.transform =
+        `perspective(800px) rotateX(${s.currentX}deg) rotateY(${s.currentY}deg) translateZ(8px) scale3d(1.015,1.015,1)`;
+    }
+    if (glowRef.current) {
+      glowRef.current.style.background =
+        `radial-gradient(circle at ${s.glowX}% ${s.glowY}%, rgba(99,102,241,0.18) 0%, transparent 65%)`;
+    }
+    rafRef.current = requestAnimationFrame(springLoop);
+  }, []);
+
+  const handleMouseMove = useCallback((e) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const nx = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+    const ny = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+    const s = stateRef.current;
+    s.targetX = -ny * 11;
+    s.targetY = nx * 11;
+    s.glowX = ((nx + 1) / 2) * 100;
+    s.glowY = ((ny + 1) / 2) * 100;
+  }, []);
+
+  const handleEnter = useCallback(() => {
+    stateRef.current.active = true;
+    if (shimRef.current) shimRef.current.style.opacity = '1';
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(springLoop);
+    onEnter();
+  }, [springLoop, onEnter]);
+
+  const handleLeave = useCallback(() => {
+    const s = stateRef.current;
+    s.active = false; s.targetX = 0; s.targetY = 0;
+    if (shimRef.current) shimRef.current.style.opacity = '0';
+    if (glowRef.current) glowRef.current.style.background = 'none';
+    const settle = () => {
+      const LERP = 0.09;
+      s.currentX += (0 - s.currentX) * LERP;
+      s.currentY += (0 - s.currentY) * LERP;
+      if (cardRef.current) {
+        cardRef.current.style.transform =
+          `perspective(800px) rotateX(${s.currentX}deg) rotateY(${s.currentY}deg) translateZ(0) scale3d(1,1,1)`;
+      }
+      if (Math.abs(s.currentX) > 0.02 || Math.abs(s.currentY) > 0.02) {
+        rafRef.current = requestAnimationFrame(settle);
+      } else if (cardRef.current) {
+        cardRef.current.style.transform = '';
+      }
+    };
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(settle);
+    onLeave();
+  }, [onLeave]);
+
+  useEffect(() => () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); }, []);
+
+  return (
+    <div
+      ref={cardRef}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={handleEnter}
+      onMouseLeave={handleLeave}
+      style={{
+        position: 'relative',
+        background: '',
+        border: `1px solid ${isHovered ? 'rgba(99,102,241,0.55)' : 'var(--border-subtle)'}`,
+        borderRadius: 16,
+        padding: '28px 24px 24px',
+        cursor: 'default',
+        transition: 'border-color 0.3s ease, box-shadow 0.3s ease',
+        boxShadow: isHovered
+          ? '0 24px 64px rgba(0,0,0,0.45), 0 0 0 1px rgba(99,102,241,0.2), inset 0 1px 0 rgba(255,255,255,0.06)'
+          : 'var(--service-card-shadow)',
+        willChange: 'transform',
+        transformStyle: 'preserve-3d',
+        overflow: 'hidden',
+      }}
+    >
+      {/* Dynamic spotlight glow */}
+      <div
+        ref={glowRef}
+        style={{
+          position: 'absolute', inset: 0,
+          pointerEvents: 'none',
+          borderRadius: 'inherit',
+        }}
+      />
+
+      {/* Bottom shimmer line */}
+      <div ref={shimRef} style={{
+        position: 'absolute', bottom: 0, left: 0, right: 0, height: 2,
+        background: 'linear-gradient(90deg, transparent, rgba(99,102,241,0.8), transparent)',
+        borderRadius: '0 0 16px 16px',
+        opacity: 0,
+        transition: 'opacity 0.4s ease',
+        pointerEvents: 'none',
+      }} />
+
+      {/* Number badge — top right */}
+      <div style={{
+        position: 'absolute',
+        top: 20,
+        right: 22,
+        fontSize: 11,
+        fontWeight: 700,
+        color: isHovered ? 'rgba(129,140,248,0.7)' : 'rgba(99,102,241,0.3)',
+        fontFamily: 'var(--font-mono)',
+        letterSpacing: '0.05em',
+        transition: 'color 0.3s ease',
+        userSelect: 'none',
+      }}>
+        #{String(index + 1).padStart(2, '0')}
+      </div>
+
+      {/* Icon box */}
+      <div style={{
+        width: 46,
+        height: 46,
+        borderRadius: 12,
+        background: isHovered ? 'rgba(99,102,241,0.18)' : 'rgba(59,130,246,0.09)',
+        border: `1px solid ${isHovered ? 'rgba(99,102,241,0.45)' : 'rgba(59,130,246,0.2)'}`,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: isHovered ? '#818CF8' : 'var(--cta)',
+        marginBottom: 20,
+        transition: 'all 0.3s ease',
+        flexShrink: 0,
+      }}>
+        {reason.icon}
+      </div>
+
+      {/* Title */}
+      <h3 style={{
+        fontSize: 15,
+        fontWeight: 700,
+        color: 'var(--text-primary)',
+        marginBottom: 10,
+        lineHeight: 1.35,
+        paddingRight: 32, /* clear number badge */
+      }}>
+        {reason.title}
+      </h3>
+
+      {/* Stat row */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'baseline',
+        gap: 8,
+        marginBottom: 14,
+      }}>
+        <span style={{
+          fontFamily: 'var(--font-mono)',
+          fontSize: 24,
+          fontWeight: 700,
+          color: isHovered ? '#818CF8' : '#6366F1',
+          lineHeight: 1,
+          transition: 'color 0.3s ease',
+        }}>
+          {reason.stat}
+        </span>
+        <span style={{
+          fontSize: 11,
+          color: 'var(--text-muted)',
+          letterSpacing: '0.02em',
+        }}>
+          {reason.statLabel}
+        </span>
+      </div>
+
+      {/* Description */}
+      <p style={{
+        fontSize: 13,
+        color: 'var(--text-muted)',
+        lineHeight: 1.75,
+        marginBottom: 20,
+      }}>
+        {reason.desc}
+      </p>
+
+      {/* Tags */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+        {reason.tags.map((tag) => (
+          <span key={tag} style={{
+            fontSize: 11,
+            padding: '3px 10px',
+            background: isHovered ? 'rgba(99,102,241,0.12)' : 'rgba(59,130,246,0.07)',
+            border: `1px solid ${isHovered ? 'rgba(99,102,241,0.3)' : 'rgba(59,130,246,0.15)'}`,
+            borderRadius: 9999,
+            color: isHovered ? '#818CF8' : 'var(--accent)',
+            transition: 'all 0.3s ease',
+            fontFamily: 'var(--font-mono)',
+          }}>
+            {tag}
+          </span>
+        ))}
+      </div>
+
+      {/* Bottom shimmer line on hover */}
+      <div style={{
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: 2,
+        background: isHovered
+          ? 'linear-gradient(90deg, transparent, rgba(99,102,241,0.7), transparent)'
+          : 'transparent',
+        borderRadius: '0 0 16px 16px',
+        transition: 'background 0.4s ease',
+      }} />
+    </div>
+  );
+}
+
+/* ─── Section ───────────────────────────────────────── */
 export default function WhyChooseUs() {
   const sectionRef = useRef(null);
   const headingRef = useRef(null);
@@ -103,7 +339,7 @@ export default function WhyChooseUs() {
           }
         });
       },
-      { threshold: 0.12 }
+      { threshold: 0.1 }
     );
 
     if (headingRef.current) {
@@ -134,9 +370,10 @@ export default function WhyChooseUs() {
         position: 'relative',
       }}
     >
+      {/* Top divider */}
       <div style={{
-        position: 'absolute', top: 0, left: 0, right: 0, height: '1px',
-        background: 'var(--border-subtle)',
+        position: 'absolute', top: 0, left: 0, right: 0, height: 1,
+        background: 'linear-gradient(90deg, transparent, var(--border-subtle), transparent)',
       }} />
 
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 32px', position: 'relative', zIndex: 1 }}>
@@ -148,7 +385,7 @@ export default function WhyChooseUs() {
           </div>
           <h2 style={{
             fontSize: 'clamp(26px, 4vw, 44px)',
-            fontWeight: 600,
+            fontWeight: 700,
             color: 'var(--text-primary)',
             lineHeight: 1.15,
             marginBottom: 14,
@@ -169,104 +406,21 @@ export default function WhyChooseUs() {
 
         {/* Cards grid */}
         <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: 16,
-          }}
+          style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}
           className="why-grid"
         >
           {reasons.map((reason, i) => (
             <div
               key={i}
               ref={(el) => { cardsRef.current[i] = el; }}
-              onMouseEnter={() => setHoveredIdx(i)}
-              onMouseLeave={() => setHoveredIdx(null)}
-              style={{
-                background: hoveredIdx === i ? 'var(--bg-elevated)' : 'var(--bg-surface)',
-                border: `1px solid ${hoveredIdx === i ? 'rgba(59,130,246,0.4)' : 'var(--border-subtle)'}`,
-                borderRadius: 14,
-                padding: '24px',
-                cursor: 'default',
-                transition: 'all 0.2s ease',
-                transform: hoveredIdx === i ? 'translateY(-4px)' : 'translateY(0)',
-                boxShadow: hoveredIdx === i ? '0 12px 40px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.2)',
-              }}
             >
-              {/* Icon row */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
-                <div style={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: 10,
-                  background: 'rgba(59,130,246,0.1)',
-                  border: '1px solid rgba(59,130,246,0.2)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'var(--cta)',
-                }}>
-                  {reason.icon}
-                </div>
-
-                {/* Stat */}
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: 22,
-                    fontWeight: 600,
-                    color: 'var(--text-primary)',
-                    lineHeight: 1,
-                    fontVariantNumeric: 'tabular-nums',
-                  }}>
-                    {reason.stat}
-                  </div>
-                  <div style={{
-                    fontSize: 11,
-                    color: 'var(--text-muted)',
-                    marginTop: 3,
-                  }}>
-                    {reason.statLabel}
-                  </div>
-                </div>
-              </div>
-
-              {/* Title */}
-              <h3 style={{
-                fontSize: 15,
-                fontWeight: 600,
-                color: 'var(--text-primary)',
-                marginBottom: 8,
-                lineHeight: 1.3,
-              }}>
-                {reason.title}
-              </h3>
-
-              {/* Description */}
-              <p style={{
-                fontSize: 13,
-                color: 'var(--text-muted)',
-                lineHeight: 1.7,
-                marginBottom: 16,
-              }}>
-                {reason.desc}
-              </p>
-
-              {/* Tags */}
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                {reason.tags.map((tag) => (
-                  <span key={tag} style={{
-                    fontSize: 11,
-                    padding: '3px 10px',
-                    background: 'rgba(59,130,246,0.08)',
-                    border: '1px solid rgba(59,130,246,0.15)',
-                    borderRadius: 9999,
-                    color: 'var(--accent)',
-                  }}>
-                    {tag}
-                  </span>
-                ))}
-              </div>
+              <TiltCard
+                reason={reason}
+                index={i}
+                isHovered={hoveredIdx === i}
+                onEnter={() => setHoveredIdx(i)}
+                onLeave={() => setHoveredIdx(null)}
+              />
             </div>
           ))}
         </div>
@@ -284,6 +438,7 @@ export default function WhyChooseUs() {
             justifyContent: 'space-between',
             flexWrap: 'wrap',
             gap: 20,
+            boxShadow: 'var(--service-card-shadow)',
           }}
           className="trust-strip"
         >

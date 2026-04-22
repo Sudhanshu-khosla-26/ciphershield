@@ -1,6 +1,6 @@
-﻿'use client';
+'use client';
 
-import { useEffect, useSyncExternalStore } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 
 const THEME_STORAGE_KEY = 'aritaro-theme';
 
@@ -35,6 +35,9 @@ function setTheme(next) {
 
 export default function ThemeToggle() {
   const theme = useSyncExternalStore(subscribeTheme, getThemeSnapshot, getThemeServerSnapshot);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -45,7 +48,7 @@ export default function ThemeToggle() {
     setTheme(next);
   };
 
-  if (typeof window === 'undefined') return null;
+  if (!mounted) return null;
 
   return (
     <button
