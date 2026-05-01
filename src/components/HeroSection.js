@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import FloatingLines from './FloatingLines';
 
@@ -11,6 +11,18 @@ export default function HeroSection() {
   const subRef = useRef(null);
   const actionsRef = useRef(null);
   const trustRef = useRef(null);
+
+  const [isLight, setIsLight] = useState(false);
+
+  /* ── theme detection ── */
+  useEffect(() => {
+    const check = () =>
+      setIsLight(document.documentElement.getAttribute('data-theme') === 'light');
+    check();
+    const obs = new MutationObserver(check);
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    return () => obs.disconnect();
+  }, []);
 
   /* ── entrance animations ── */
   useEffect(() => {
@@ -37,8 +49,9 @@ export default function HeroSection() {
         alignItems: 'center',
         textAlign: 'center',
         padding: '140px 32px 80px',
-        background:
-          'radial-gradient(ellipse 80% 50% at 50% -20%, rgba(59,130,246,0.1) 0%, transparent 60%), var(--bg-base)',
+        background: isLight
+            ? '#ffffff'
+            : 'radial-gradient(ellipse 80% 50% at 50% -20%, rgba(59,130,246,0.1) 0%, transparent 60%), var(--bg-base)',
         position: 'relative',
         overflow: 'hidden',
       }}
@@ -58,7 +71,8 @@ export default function HeroSection() {
           animationSpeed={0.6}
           interactive={false}
           parallax={false}
-          mixBlendMode="screen"
+          mixBlendMode={isLight ? 'normal' : 'screen'}
+          backgroundColor={isLight ? '#ffffff' : '#000000'}
         />
       </div>
 
@@ -92,11 +106,12 @@ export default function HeroSection() {
             color: 'var(--text-primary)',
             maxWidth: 800,
             marginBottom: 24,
+            textShadow: isLight ? 'none' : '0 2px 20px rgba(0,0,0,0.7), 0 0 40px rgba(0,0,0,0.5)',
           }}
         >
-          The security platform<br />
-          enterprises{' '}
-          <em style={{ fontStyle: 'normal', color: 'var(--accent)' }}>trust.</em>
+          Unseen Digital Power<br />
+          <em style={{ fontStyle: 'normal', color: 'var(--accent)' }}>Protecting</em>{' '}
+          the Future
         </h1>
 
         {/* Subtitle */}
@@ -108,10 +123,11 @@ export default function HeroSection() {
             maxWidth: 560,
             lineHeight: 1.75,
             margin: '0 0 40px',
+            textShadow: isLight ? 'none' : '0 1px 12px rgba(0,0,0,0.8), 0 0 30px rgba(0,0,0,0.6)',
           }}
         >
-          Military-grade threat detection, zero-trust architecture, and AI-driven
-          automation — built for India&apos;s most critical businesses.
+          We help businesses secure their digital systems through in-depth cybersecurity
+          audits, intelligent threat detection, and targeted risk reduction.
         </p>
 
         {/* CTA row */}
@@ -123,7 +139,7 @@ export default function HeroSection() {
             className="btn-primary"
             onClick={() => { const el = document.querySelector('#contact'); if (el) el.scrollIntoView({ behavior: 'smooth' }); }}
           >
-            Start Free Audit
+            Request Assessment
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M5 12h14M12 5l7 7-7 7" />
             </svg>
@@ -137,7 +153,7 @@ export default function HeroSection() {
               <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" />
               <polygon points="10,8 16,12 10,16" fill="currentColor" />
             </svg>
-            Watch Demo
+            Demo Report
           </button>
         </div>
 
@@ -152,7 +168,7 @@ export default function HeroSection() {
             alignItems: 'center',
           }}
         >
-          {['SOC 2 Certified', 'ISO 27001', '500+ Enterprises', '40 Countries'].map((item, i) => (
+          {['ISO 27001', 'Google Certified', 'Global Ready'].map((item, i) => (
             <span
               key={i}
               style={{

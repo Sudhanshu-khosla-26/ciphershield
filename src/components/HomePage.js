@@ -441,7 +441,8 @@ export default function HomePage() {
           bendStrength={-0.5}
           parallax={true}
           parallaxStrength={0.15}
-          mixBlendMode={theme === 'light' ? 'multiply' : 'screen'}
+          mixBlendMode={theme === 'light' ? 'normal' : 'screen'}
+          backgroundColor={theme === 'light' ? '#ffffff' : '#000000'}
         />
       </div>
 

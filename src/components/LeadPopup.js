@@ -95,11 +95,13 @@ export default function LeadPopup() {
       >
         <div style={{
           position: 'relative',
-          background: 'var(--bg-elevated)',
-          border: '1px solid var(--border-subtle)',
+          background: 'rgba(10, 15, 35, 0.55)',
+          backdropFilter: 'blur(24px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+          border: '1px solid rgba(255,255,255,0.08)',
           borderRadius: 16,
           overflow: 'hidden',
-          boxShadow: '0 32px 80px rgba(0,0,0,0.6)',
+          boxShadow: '0 32px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06)',
         }}>
           {/* Blue top stripe */}
           <div style={{

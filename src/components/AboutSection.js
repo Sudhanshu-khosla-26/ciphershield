@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
@@ -64,11 +65,18 @@ export default function AboutSection() {
         {/* ── Section badge + headline ── */}
         <div style={{ textAlign: 'center', marginBottom: 64 }}>
           <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: 8,
+            display: 'inline-flex', alignItems: 'center', gap: 10,
             background: 'var(--glass-bg)',
             border: '1px solid var(--glass-border)',
             borderRadius: 100, padding: '5px 18px', marginBottom: 20,
           }}>
+            <Image
+              src="/aritaro-logo.png"
+              alt="Aritaro Logo"
+              width={18}
+              height={18}
+              style={{ objectFit: 'contain', flexShrink: 0 }}
+            />
             <span style={{
               width: 6, height: 6, borderRadius: '50%',
               background: 'var(--cyan-primary)',
@@ -226,21 +234,11 @@ export default function AboutSection() {
             <p style={{
               fontFamily: 'var(--font-space-grotesk), Inter, sans-serif',
               fontSize: 'clamp(15px,1.5vw,17px)', lineHeight: 1.85,
-              color: 'var(--text-secondary)', marginBottom: 20,
-            }}>
-              Aritaro Pvt Limited is an AI-powered cybersecurity and automation platform engineered for enterprises
-              operating in high-threat environments. We combine military-grade security protocols with intelligent
-              automation to protect, optimise, and fortify your digital operations — 24/7, at scale.
-            </p>
-
-            <p style={{
-              fontFamily: 'var(--font-space-grotesk), Inter, sans-serif',
-              fontSize: 'clamp(15px,1.5vw,17px)', lineHeight: 1.85,
               color: 'var(--text-secondary)', marginBottom: 36,
             }}>
-              Our approach integrates cutting-edge AI with deep security expertise — from autonomous threat detection
-              to zero-trust access frameworks and GPT-powered enterprise automation. With Aritaro, your organisation
-              doesn&apos;t just defend against threats; it anticipates, neutralises, and evolves beyond them.
+              Aritaro helps modern businesses strengthen their digital defense through advanced cybersecurity,
+              intelligent automation, and trusted security expertise. We build solutions that protect operations,
+              reduce exposure, and keep organisations ready for what&apos;s next.
             </p>
 
             {/* Mini stats row */}

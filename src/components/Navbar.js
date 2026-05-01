@@ -146,19 +146,19 @@ export default function Navbar() {
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: 10,
+            gap: 0,
             background: 'none',
             border: 'none',
             cursor: 'pointer',
             padding: 0,
           }}
         >
-          <div style={{ width: 36, height: 36, position: 'relative', flexShrink: 0 }}>
+          <div style={{ width: 46, height: 46, position: 'relative', flexShrink: 0 }}>
             <Image
               src="/aritaro-logo.png"
               alt="Aritaro"
               fill
-              sizes="36px"
+              sizes="46px"
               style={{ objectFit: 'contain' }}
               priority
             />

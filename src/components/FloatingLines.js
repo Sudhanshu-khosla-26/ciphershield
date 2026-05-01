@@ -56,6 +56,9 @@ uniform vec2 parallaxOffset;
 uniform vec3 lineGradient[8];
 uniform int lineGradientCount;
 
+uniform vec3 bgColor;
+uniform bool lightMode;
+
 const vec3 BLACK = vec3(0.0);
 const vec3 PINK  = vec3(233.0, 71.0, 245.0) / 255.0;
 const vec3 BLUE  = vec3(47.0,  75.0, 162.0) / 255.0;
@@ -192,7 +195,28 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     }
   }
 
-  fragColor = vec4(col, 1.0);
+  if (lightMode) {
+    float lineBright = max(col.r, max(col.g, col.b));
+
+    // Wide soft mask — preserves the beautiful glow falloff like dark mode
+    float mask = smoothstep(0.03, 0.5, lineBright);
+
+    // Boost the raw accumulated color
+    vec3 boosted = col * 2.5;
+    // Tone-map: prevents overlap areas from blowing out to white
+    // Single lines stay vivid; overlaps compress into deeper saturated color
+    boosted = boosted / (boosted + vec3(0.35));
+
+    // Subtle cool-white ambient in the glow zone
+    vec3 ambient = vec3(0.93, 0.96, 1.0);
+    vec3 base = mix(bgColor, ambient, mask * 0.1);
+
+    vec3 finalColor = mix(base, boosted, mask);
+    fragColor = vec4(finalColor, 1.0);
+  } else {
+    // Dark mode: keep additive glow (works with screen blend)
+    fragColor = vec4(col, 1.0);
+  }
 }
 
 void main() {
@@ -243,7 +267,8 @@ export default function FloatingLines({
   mouseDamping = 0.05,
   parallax = true,
   parallaxStrength = 0.2,
-  mixBlendMode = 'screen'
+  mixBlendMode = 'screen',
+  backgroundColor = '#000000'
 }) {
   const containerRef = useRef(null);
   const targetMouseRef = useRef(new Vector2(-1000, -1000));
@@ -340,7 +365,10 @@ export default function FloatingLines({
       lineGradient: {
         value: Array.from({ length: MAX_GRADIENT_STOPS }, () => new Vector3(1, 1, 1))
       },
-      lineGradientCount: { value: 0 }
+      lineGradientCount: { value: 0 },
+
+      bgColor: { value: hexToVec3(backgroundColor) },
+      lightMode: { value: backgroundColor !== '#000000' }
     };
 
     if (linesGradient && linesGradient.length > 0) {
@@ -476,7 +504,8 @@ export default function FloatingLines({
     bendStrength,
     mouseDamping,
     parallax,
-    parallaxStrength
+    parallaxStrength,
+    backgroundColor
   ]);
 
   return (
